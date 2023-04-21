@@ -1,4 +1,5 @@
 import { createElement } from "../helper/createElement.js";
+import { shuffleArray } from "../helper/shuffleArray.js";
 import { showAlert } from "./showAlert.js";
 
 export const createPairs = (app) => {
@@ -33,55 +34,62 @@ export const createPairs = (app) => {
   container.append(btnReturn, btnCard);
   pairs.append(container);
 
-  const controller = data => {
-    showAlert('text');
-    let index = 0;
+  let dataCards = [];
 
-    front.textContent = data[index][0];
-    back.textContent = data[index][1];
+  const flipCard = () => {
+    // console.log(btnCard.index);
 
-    const flipCard = () => {
-      btnCard.classList.add('card__item_flipped');
-      btnCard.removeEventListener('click', flipCard);
+    btnCard.classList.add('card__item_flipped');
+    btnCard.removeEventListener('click', flipCard);
+
+    setTimeout(() => {
+      btnCard.classList.remove('card__item_flipped');
 
       setTimeout(() => {
-        btnCard.classList.remove('card__item_flipped');
+        btnCard.index++;
 
-        setTimeout(() => {
-          index++;
+        if (btnCard.index === dataCards.length) {
+          front.textContent = 'the end';
 
-          if (index === data.length) {
-            front.textContent = 'the end';
-
-            showAlert('Вернемся к категориям', 2000);
-
-            setTimeout(() => {
-              btnReturn.click();
-            }, 1000);
-
-            return;
-          }
-
-          front.textContent = data[index][0];
-          back.textContent = data[index][1];
+          showAlert('Вернемся к категориям', 2000);
 
           setTimeout(() => {
-            btnCard.addEventListener('click', flipCard);
-          }, 200);
-        }, 100);
-      }, 1000);
-    };
+            btnReturn.click();
+          }, 2000);
+
+          return;
+        }
+
+        front.textContent = dataCards[btnCard.index][0];
+        back.textContent = dataCards[btnCard.index][1];
+
+        setTimeout(() => {
+          btnCard.addEventListener('click', flipCard);
+        }, 200);
+      }, 100);
+    }, 1000);
+  };
+
+  const controller = data => {
+    dataCards = [...data];
+
+    btnCard.index = 0;
+
+    front.textContent = data[btnCard.index][0];
+    back.textContent = data[btnCard.index][1];
 
     btnCard.addEventListener('click', flipCard);
   };
 
   const mount = (data) => {
     app.append(pairs);
-    controller(data.pairs);
+    const newDate = shuffleArray(data.pairs);
+    controller(newDate);
   };
 
   const unmount = () => {
     pairs.remove();
+    btnCard.removeEventListener('click', flipCard);
   };
 
   return { btnReturn, mount, unmount };
